@@ -1,0 +1,18 @@
+[
+  {
+    "name": "cookie accept",
+    "selector": "button:has-text('Accept all'), button:has-text('I agree'), #onetrust-accept-btn-handler",
+    "timeout": 5000
+  },
+  {
+    "name": "age confirm text",
+    "role": "button",
+    "name_regex": "^(Enter|Continue|I am 18|I am over 18|بالای ۱۸|بالای 18|تایید|قبول|ورود)$",
+    "timeout": 5000
+  },
+  {
+    "name": "close modal",
+    "selector": "button[aria-label='Close'], .modal .close, .popup .close",
+    "timeout": 2000
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "action": "click",
+    "selector": "button:has-text('Accept')",
+    "timeout": 5000,
+    "continue_on_error": true
+  },
+  {
+    "action": "wait",
+    "ms": 1500
+  },
+  {
+    "action": "scroll_to_bottom",
+    "max_scrolls": 15
+  },
+  {
+    "action": "wait_for_load_state",
+    "state": "networkidle",
+    "timeout": 15000,
+    "continue_on_error": true
+  },
+  {
+    "action": "screenshot",
+    "name": "after-automation.png",
+    "full_page": true
+  }
+]
