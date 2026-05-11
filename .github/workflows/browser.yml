@@ -105,6 +105,11 @@ on:
         required: false
         default: false
         type: boolean
+      max_part_size_mb:
+        description: 'When the capture zip is larger than this (MB), split into parts before push. Use ≤99 for GitHub 100 MB limit.'
+        required: false
+        default: '50'
+        type: string
 
 concurrency:
   group: browser-${{ github.ref }}
@@ -165,6 +170,8 @@ jobs:
 
       - name: Create zip archive of capture folder
         if: always()
+        env:
+          MAX_PART_SIZE_MB_INPUT: ${{ inputs.max_part_size_mb }}
         run: |
           set -euo pipefail
 
@@ -173,7 +180,21 @@ jobs:
             exit 0
           fi
 
-          MAX_GITHUB_FILE_MB=50
+          MAX_PART_RAW="${MAX_PART_SIZE_MB_INPUT:-50}"
+          if [ -z "$MAX_PART_RAW" ]; then
+            MAX_GITHUB_FILE_MB=50
+          elif echo "$MAX_PART_RAW" | grep -Eq '^[0-9]+$' && [ "$MAX_PART_RAW" -gt 0 ] 2>/dev/null; then
+            MAX_GITHUB_FILE_MB="$MAX_PART_RAW"
+            if [ "$MAX_GITHUB_FILE_MB" -gt 99 ]; then
+              echo "max_part_size_mb capped at 99 (GitHub rejects blobs ≥100 MB)."
+              MAX_GITHUB_FILE_MB=99
+            fi
+          else
+            echo "Invalid max_part_size_mb: $MAX_PART_RAW (use a positive integer)."
+            exit 1
+          fi
+          echo "Split threshold if zip exceeds limit: ${MAX_GITHUB_FILE_MB} MB per part"
+
           ZIP_PATH="$BROWSER_OUTPUT_DIR.zip"
 
           zip -r "$ZIP_PATH" "$BROWSER_OUTPUT_DIR"

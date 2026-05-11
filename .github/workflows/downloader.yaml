@@ -20,6 +20,11 @@ on:
         required: false
         default: ''
         type: string
+      max_part_size_mb:
+        description: 'Max size per archive part when splitting (MB). Use ≤99 to stay under GitHub 100 MB per file.'
+        required: false
+        default: '90'
+        type: string
 
 jobs:
   save-file:
@@ -42,7 +47,20 @@ jobs:
           MODE="${{ github.event.inputs.mode }}"
           URLS="${{ github.event.inputs.urls }}"
           ZIP_PASSWORD="${{ github.event.inputs.password }}"
-          SPLIT_THRESHOLD_MB=90
+          MAX_PART_SIZE_MB_RAW="${{ github.event.inputs.max_part_size_mb }}"
+
+          if [ -z "$MAX_PART_SIZE_MB_RAW" ]; then
+            SPLIT_THRESHOLD_MB=90
+          elif echo "$MAX_PART_SIZE_MB_RAW" | grep -Eq '^[0-9]+$' && [ "$MAX_PART_SIZE_MB_RAW" -gt 0 ] 2>/dev/null; then
+            SPLIT_THRESHOLD_MB="$MAX_PART_SIZE_MB_RAW"
+            if [ "$SPLIT_THRESHOLD_MB" -gt 99 ]; then
+              echo "max_part_size_mb capped at 99 (GitHub rejects blobs ≥100 MB)."
+              SPLIT_THRESHOLD_MB=99
+            fi
+          else
+            echo "Invalid max_part_size_mb: $MAX_PART_SIZE_MB_RAW (use a positive integer, e.g. 50 or 90)."
+            exit 1
+          fi
           SPLIT_THRESHOLD_BYTES=$(( SPLIT_THRESHOLD_MB * 1024 * 1024 ))
 
           REPO_OWNER="${{ github.repository_owner }}"
@@ -50,7 +68,7 @@ jobs:
           BRANCH="${GITHUB_REF_NAME}"
 
           echo "Downloading with mode: $MODE"
-          echo "Split threshold: $SPLIT_THRESHOLD_MB MB (automatic)"
+          echo "Max part size (split zip / large files): ${SPLIT_THRESHOLD_MB} MB"
           if [ -n "$ZIP_PASSWORD" ]; then
             echo "Password protection: ENABLED"
           else
