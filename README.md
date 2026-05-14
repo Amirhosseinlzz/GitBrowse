@@ -113,3 +113,11 @@
 ---
 
 *اگر این README یا workflowها با نام فایل‌های واقعی در شاخه `.github/workflows` فرق داشت، نام فایل‌های YAML همان منبع نهایی است.*
+
+---
+
+## فایل های دانلود شده در گیتهاب شما :
+
+1. [PersianMind-v1.0.Q4_K_M](https://github.com/Amirhosseinlzz/GitBrowse/tree/main/downloads/PersianMind-v1.0.Q4_K_M)
+
+---
